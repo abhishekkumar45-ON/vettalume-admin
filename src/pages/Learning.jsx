@@ -50,13 +50,21 @@ function ChapterList() {
 
 function ChapterView({ chapter: ch }) {
   const S = useStore();
+  const realSubs = ch.subs.filter((s) => !s._practiceBank);
   return (
     <>
       <div className="lpath"><a onClick={() => A.nav('learning')}>{S.exam} · Chapters</a><Icon name="chevR" /><span className="cur">{ch.name}</span></div>
       <PageHead eyebrow="Chapter" title={ch.name} actions={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopic</button>} />
-      {ch.subs.length ? (
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div className="lcard" onClick={() => A.openPracticeBank(ch.id)}>
+          <div className="nidx"><Icon name="list" /></div>
+          <div><div className="lc-t">Practice questions</div><div className="lc-s">Chapter-level practice pool — shown in the student practice section and counts toward mastery</div></div>
+          <div className="lc-meta"><span className="mchip"><Icon name="list" /> practice</span><Icon name="chevR" /></div>
+        </div>
+      </div>
+      {realSubs.length ? (
         <div className="card">
-          {ch.subs.map((s, i) => (
+          {realSubs.map((s, i) => (
             <div className="lcard" key={s.id} onClick={() => A.openSubtopic(s.id)}>
               <span className="draghint" title="Drag to reorder"><Icon name="grip" /></span>
               <div className="nidx">{i + 1}</div>
@@ -79,20 +87,23 @@ function ChapterView({ chapter: ch }) {
 
 function SubtopicView({ chapter: ch, sub: s }) {
   const S = useStore();
-  const tab = S.tab;
+  const tab = s._practiceBank ? 'quiz' : S.tab;
   const TabBtn = ({ t, label, icn, n }) => (
     <button className={tab === t ? 'on' : ''} onClick={() => A.setTab(t)}><Icon name={icn} /> {label}{n != null && <span className="cellsub" style={{ fontFamily: 'var(--m)' }}> ({n})</span>}</button>
   );
   return (
     <>
-      <div className="lpath"><a onClick={() => A.nav('learning')}>{S.exam} · Chapters</a><Icon name="chevR" /><a onClick={() => A.openChapter(ch.id)}>{ch.name}</a><Icon name="chevR" /><span className="cur">{s.name}</span></div>
-      <PageHead eyebrow="Subtopic" title={s.name} />
-      <div className="tabs">
-        <TabBtn t="concepts" label="Concept" icn="book" />
-        <TabBtn t="videos" label="Videos" icn="video" n={s.videos.length} />
-        <TabBtn t="materials" label="Materials" icn="doc" n={s.pdfs.length} />
-        <TabBtn t="quiz" label="Quiz" icn="list" n={s.quiz.length} />
-      </div>
+      <div className="lpath"><a onClick={() => A.nav('learning')}>{S.exam} · Chapters</a><Icon name="chevR" /><a onClick={() => A.openChapter(ch.id)}>{ch.name}</a><Icon name="chevR" /><span className="cur">{s._practiceBank ? 'Practice questions' : s.name}</span></div>
+      <PageHead eyebrow={s._practiceBank ? `Chapter · ${ch.name}` : 'Subtopic'} title={s._practiceBank ? 'Practice questions' : s.name}
+        desc={s._practiceBank ? 'These appear in the student practice section for this chapter (adaptive via the MAB) and count toward its mastery.' : undefined} />
+      {!s._practiceBank && (
+        <div className="tabs">
+          <TabBtn t="concepts" label="Concept" icn="book" />
+          <TabBtn t="videos" label="Videos" icn="video" n={s.videos.length} />
+          <TabBtn t="materials" label="Materials" icn="doc" n={s.pdfs.length} />
+          <TabBtn t="quiz" label="Quiz" icn="list" n={s.quiz.length} />
+        </div>
+      )}
       <div>{
         tab === 'concepts' ? <ConceptPane html={s.concept} onSave={(html) => A.saveConcept(html)} onUpload={(file) => A.uploadConceptHtml(file)} />
         : tab === 'videos' ? (

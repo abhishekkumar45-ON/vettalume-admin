@@ -87,6 +87,9 @@ export const deleteNode = (id, cascade) =>
   del(`/admin/nodes/${encodeURIComponent(id)}${cascade ? '?cascade=1' : ''}`);
 export const renameNode = (id, name) =>
   request(`/admin/nodes/${encodeURIComponent(id)}`, { method: 'PATCH', body: { name } });
+// Get-or-create a chapter's hidden practice-question bank; returns { id } to author questions into.
+export const ensurePracticeBank = (topicId) =>
+  post(`/admin/chapters/${encodeURIComponent(topicId)}/practice-bank`);
 
 /* ----------------------------------------------------- admin: learning content
    Backend stores per-concept content as { body, videos:[{title,url,seconds}] }. */

@@ -371,6 +371,7 @@ export const A = {
         id: t.id, name: t.name, section: t.section,
         subs: concepts.filter((c) => c.parent_id === t.id).map((c) => ({
           id: c.id, name: c.name, concept: '', videos: [], pdfs: [], quiz: [], _loaded: false, _section: c.section,
+          _practiceBank: (c.id || '').endsWith('__practice'),
         })),
       }));
       emit();
@@ -418,6 +419,23 @@ export const A = {
     // cascade=1 also removes the subtopic's questions (backend refuses a plain delete if any exist).
     try { await api.deleteNode(id, true); ch.subs = ch.subs.filter((s) => s.id !== id); emit(); toast('Subtopic deleted', 'del'); }
     catch (e) { toast(e.message || 'Could not delete subtopic', 'del'); }
+  },
+  // Open a chapter's practice-question bank (chapter-level questions for the student practice
+  // section). Get-or-create it on the backend, make sure it's in the chapter's subs, then open it.
+  async openPracticeBank(chapterId) {
+    const ch = chapterById(chapterId); if (!ch) return;
+    try {
+      const r = await api.ensurePracticeBank(chapterId);
+      let pb = ch.subs.find((s) => s.id === r.id);
+      if (!pb) {
+        pb = { id: r.id, name: r.name || 'Practice questions', _practiceBank: true, _section: ch.section,
+               concept: '', videos: [], pdfs: [], quiz: [], _loaded: false };
+        ch.subs.push(pb);
+      }
+      state.cid = chapterId; state.sid = r.id; state.tab = 'quiz'; emit();
+      try { window.history.pushState({ lms: 'practice' }, ''); } catch (e) {}
+      if (!pb._loaded) { await loadSub(pb); emit(); }
+    } catch (e) { toast(e.message || 'Could not open the practice bank', 'del'); }
   },
   async openSubtopic(id) {
     state.sid = id; state.tab = 'concepts'; emit();
