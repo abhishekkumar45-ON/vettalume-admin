@@ -188,6 +188,15 @@ function labelToSec(d) {
 // New chapters/subtopics need a backend section; the UI doesn't model sections, so default to the
 // exam's first one (loaded from the syllabus). Section is a backend concept here, invisible in the UI.
 const firstSectionKey = () => (state.lmsSections[state.exam] || [])[0]?.key || null;
+
+// Browser Back button: step up the learning drill-down (subtopic -> chapter -> chapter list) instead
+// of leaving the app. Paired with the history.pushState() calls in openChapter/openSubtopic below.
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => {
+    if (state.sid) { state.sid = null; emit(); }
+    else if (state.cid) { state.cid = null; emit(); }
+  });
+}
 // Save a subtopic's concept HTML + its videos (mapped to the backend's {title,url,seconds} shape).
 async function persistConcept(sub) {
   if (!sub || !sub.id) return;
@@ -379,15 +388,15 @@ export const A = {
     catch (e) { toast(e.message || 'Could not rename chapter', 'del'); }
   },
   async delChapter(id) {
-    const ch = state.lms[state.exam].find((c) => c.id === id);
+    // cascade=1 removes the chapter, its subtopics, and all their questions in one call.
     try {
-      for (const s of (ch?.subs || [])) await api.deleteNode(s.id); // backend blocks deleting a chapter that still has subtopics
-      await api.deleteNode(id);
+      await api.deleteNode(id, true);
       state.lms[state.exam] = state.lms[state.exam].filter((c) => c.id !== id); emit(); toast('Chapter deleted', 'del');
     } catch (e) { toast(e.message || 'Could not delete chapter', 'del'); }
   },
   async openChapter(id) {
     state.cid = id; state.sid = null; emit();
+    try { window.history.pushState({ lms: 'chapter' }, ''); } catch (e) {}
     const ch = chapterById(id);
     if (!ch || !ch.subs.some((s) => !s._loaded)) return;
     try { await Promise.all(ch.subs.map(loadSub)); emit(); }
@@ -406,11 +415,13 @@ export const A = {
   },
   async delSubtopic(id) {
     const ch = chapterById(state.cid);
-    try { await api.deleteNode(id); ch.subs = ch.subs.filter((s) => s.id !== id); emit(); toast('Subtopic deleted', 'del'); }
+    // cascade=1 also removes the subtopic's questions (backend refuses a plain delete if any exist).
+    try { await api.deleteNode(id, true); ch.subs = ch.subs.filter((s) => s.id !== id); emit(); toast('Subtopic deleted', 'del'); }
     catch (e) { toast(e.message || 'Could not delete subtopic', 'del'); }
   },
   async openSubtopic(id) {
     state.sid = id; state.tab = 'concepts'; emit();
+    try { window.history.pushState({ lms: 'subtopic' }, ''); } catch (e) {}
     const ch = chapterById(state.cid); const sub = ch && subById(ch, id);
     if (!sub || sub._loaded) return;
     try { await loadSub(sub); emit(); }

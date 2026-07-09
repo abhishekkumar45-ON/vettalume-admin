@@ -130,6 +130,12 @@ export const Row = ({ children, cols = 2 }) => <div className={cols === 3 ? 'fro
 
 /* ---------------- Modal shell ---------------- */
 export function Modal({ title, sub, lg, onSave, saveLabel = 'Save', danger, children }) {
+  // Esc closes the modal (a common "back" gesture).
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') closeModal(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   return (
     <div
       className="overlay on"

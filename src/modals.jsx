@@ -121,7 +121,7 @@ export function ChapterModal({ chapter }) {
   return (
     <Modal title={chapter ? 'Rename chapter' : 'Add chapter'} sub={S.exam} saveLabel={chapter ? 'Save' : 'Add chapter'} onSave={save}>
       <Field label="Chapter name" value={name} onChange={setName} placeholder="e.g. Arithmetic" />
-      {!chapter && sections.length > 1 ? (
+      {!chapter && sections.length > 0 ? (
         <Field
           label="Section"
           options={sections.map((s) => ({ v: s.key, l: s.name || s.key }))}

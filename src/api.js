@@ -83,7 +83,8 @@ export const addTopic = (exam, sectionKey, id, name) =>
 export const addConcept = (exam, sectionKey, id, name, parentId) =>
   post('/admin/concepts', { id, exam_code: exam, section_key: sectionKey, name, parent_id: parentId });
 
-export const deleteNode = (id) => del(`/admin/nodes/${encodeURIComponent(id)}`);
+export const deleteNode = (id, cascade) =>
+  del(`/admin/nodes/${encodeURIComponent(id)}${cascade ? '?cascade=1' : ''}`);
 export const renameNode = (id, name) =>
   request(`/admin/nodes/${encodeURIComponent(id)}`, { method: 'PATCH', body: { name } });
 
