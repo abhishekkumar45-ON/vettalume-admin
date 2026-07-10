@@ -54,7 +54,7 @@ function ChapterView({ chapter: ch }) {
   return (
     <>
       <div className="lpath"><a onClick={() => A.nav('learning')}>{S.exam} · Chapters</a><Icon name="chevR" /><span className="cur">{ch.name}</span></div>
-      <PageHead eyebrow="Chapter" title={ch.name} desc="Each subtopic has its learning content (concept, video, quiz) and its own Practice questions — the practice set drives the adaptive practice section, one subtopic at a time." actions={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopic</button>} />
+      <PageHead eyebrow="Chapter" title={ch.name} desc="Each subtopic has its learning content (concept, video, quiz) and its own Practice questions. In the student practice section, questions mix across subtopics — each subtopic ramps easy→hard on its own as the student gets it right." actions={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopic</button>} />
       {realSubs.length ? (
         <div className="card">
           {realSubs.map((s, i) => (
