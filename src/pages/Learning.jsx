@@ -54,14 +54,7 @@ function ChapterView({ chapter: ch }) {
   return (
     <>
       <div className="lpath"><a onClick={() => A.nav('learning')}>{S.exam} · Chapters</a><Icon name="chevR" /><span className="cur">{ch.name}</span></div>
-      <PageHead eyebrow="Chapter" title={ch.name} actions={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopic</button>} />
-      <div className="card" style={{ marginBottom: 14 }}>
-        <div className="lcard" onClick={() => A.openPracticeBank(ch.id)}>
-          <div className="nidx"><Icon name="list" /></div>
-          <div><div className="lc-t">Practice questions</div><div className="lc-s">Chapter-level practice pool — shown in the student practice section and counts toward mastery</div></div>
-          <div className="lc-meta"><span className="mchip"><Icon name="list" /> practice</span><Icon name="chevR" /></div>
-        </div>
-      </div>
+      <PageHead eyebrow="Chapter" title={ch.name} desc="Each subtopic has its learning content (concept, video, quiz) and its own Practice questions — the practice set drives the adaptive practice section, one subtopic at a time." actions={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopic</button>} />
       {realSubs.length ? (
         <div className="card">
           {realSubs.map((s, i) => (
@@ -71,6 +64,7 @@ function ChapterView({ chapter: ch }) {
               <div><div className="lc-t">{s.name}</div><div className="lc-s">{s.concept ? 'Concept added' : 'No concept'} · {s.videos.length} video{s.videos.length !== 1 ? 's' : ''} · {s.pdfs.length} file{s.pdfs.length !== 1 ? 's' : ''} · {s.quiz.length} questions</div></div>
               <div className="lc-meta">
                 <span className="mchip"><Icon name="video" /> {s.videos.length}</span><span className="mchip"><Icon name="doc" /> {s.pdfs.length}</span><span className="mchip"><Icon name="list" /> {s.quiz.length}</span>
+                <button className="btn ghost sm" title="Upload this subtopic's practice questions" onClick={(e) => { e.stopPropagation(); A.openPracticeBank(s.id); }}><Icon name="list" /> Practice</button>
                 <button className="ibtn" title="Rename" onClick={(e) => { e.stopPropagation(); openModal(<SubtopicModal subtopic={s} chapterName={ch.name} />); }}><Icon name="edit" /></button>
                 <button className="ibtn del" title="Delete" onClick={(e) => { e.stopPropagation(); openModal(<ConfirmDelete what={s.name} onYes={() => A.delSubtopic(s.id)} />); }}><Icon name="trash" /></button>
                 <Icon name="chevR" />
