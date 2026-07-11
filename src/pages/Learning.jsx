@@ -4,7 +4,7 @@ import { useStore, A, openModal, startImport, chapterById, subById } from '../st
 import { PageHead, Empty, QuestionRow, RichText, ConceptPane, IconBtn } from '../ui.jsx';
 import { EXC, embedUrl } from '../helpers.js';
 import { ConfirmDelete } from '../ui.jsx';
-import { ChapterModal, SubtopicModal, VideoModal, PdfModal, QuestionModal, PreviewQuestion } from '../modals.jsx';
+import { ChapterModal, SubtopicModal, VideoModal, QuestionModal, PreviewQuestion } from '../modals.jsx';
 import { downloadTemplate } from '../excel.js';
 
 export default function Learning() {
@@ -23,7 +23,7 @@ function ChapterList() {
   return (
     <>
       <PageHead eyebrow={`${S.exam} · catalog`} eyebrowColor={EXC[S.exam]} title="Chapters & content"
-        desc="Build the learning library: chapters, subtopics, concepts, videos, materials and quizzes."
+        desc="Build the learning library: chapters, subtopics, concepts, videos and quizzes."
         actions={<button className="btn primary" onClick={() => openModal(<ChapterModal />)}><Icon name="plus" /> Add chapter</button>} />
       {list.length ? (
         <div className="card">
@@ -61,9 +61,9 @@ function ChapterView({ chapter: ch }) {
             <div className="lcard" key={s.id} onClick={() => A.openSubtopic(s.id)}>
               <span className="draghint" title="Drag to reorder"><Icon name="grip" /></span>
               <div className="nidx">{i + 1}</div>
-              <div><div className="lc-t">{s.name}</div><div className="lc-s">{s.concept ? 'Concept added' : 'No concept'} · {s.videos.length} video{s.videos.length !== 1 ? 's' : ''} · {s.pdfs.length} file{s.pdfs.length !== 1 ? 's' : ''} · {s.quiz.length} questions</div></div>
+              <div><div className="lc-t">{s.name}</div><div className="lc-s">{s.concept ? 'Concept added' : 'No concept'} · {s.videos.length} video{s.videos.length !== 1 ? 's' : ''} · {s.quiz.length} questions</div></div>
               <div className="lc-meta">
-                <span className="mchip"><Icon name="video" /> {s.videos.length}</span><span className="mchip"><Icon name="doc" /> {s.pdfs.length}</span><span className="mchip"><Icon name="list" /> {s.quiz.length}</span>
+                <span className="mchip"><Icon name="video" /> {s.videos.length}</span><span className="mchip"><Icon name="list" /> {s.quiz.length}</span>
                 <button className="btn ghost sm" title="Upload this subtopic's practice questions" onClick={(e) => { e.stopPropagation(); A.openPracticeBank(s.id); }}><Icon name="list" /> Practice</button>
                 <button className="ibtn" title="Rename" onClick={(e) => { e.stopPropagation(); openModal(<SubtopicModal subtopic={s} chapterName={ch.name} />); }}><Icon name="edit" /></button>
                 <button className="ibtn del" title="Delete" onClick={(e) => { e.stopPropagation(); openModal(<ConfirmDelete what={s.name} onYes={() => A.delSubtopic(s.id)} />); }}><Icon name="trash" /></button>
@@ -94,7 +94,6 @@ function SubtopicView({ chapter: ch, sub: s }) {
         <div className="tabs">
           <TabBtn t="concepts" label="Concept" icn="book" />
           <TabBtn t="videos" label="Videos" icn="video" n={s.videos.length} />
-          <TabBtn t="materials" label="Materials" icn="doc" n={s.pdfs.length} />
           <TabBtn t="quiz" label="Quiz" icn="list" n={s.quiz.length} />
         </div>
       )}
@@ -113,16 +112,6 @@ function SubtopicView({ chapter: ch, sub: s }) {
               </div>
                 <div className="mbody"><div className="mt">{v.title}</div><div className="ms">{v.dur ? v.dur + ' · ' : ''}{v.src || 'uploaded'}</div>
                   <div className="mact"><button className="btn ghost sm" onClick={() => openModal(<VideoModal video={v} />)}><Icon name="edit" /> Edit</button><button className="btn danger sm" onClick={() => A.delVideo(v.id)}><Icon name="trash" /></button></div></div></div>
-            ))}
-          </div>
-        )
-        : tab === 'materials' ? (
-          <div className="media-grid">
-            <div className="adder" onClick={() => openModal(<PdfModal />)}><Icon name="upload" /><div><b>Upload material</b><div className="cellsub">PDF, slides or notes</div></div></div>
-            {s.pdfs.map((p) => (
-              <div className="media" key={p.id}><div className="thumb" style={{ color: 'var(--gmat)' }}><Icon name="doc" /></div>
-                <div className="mbody"><div className="mt">{p.title}</div><div className="ms">{p.size || ''}</div>
-                  <div className="mact"><button className="btn ghost sm" onClick={() => A.openPdf(p.id)}><Icon name="eye" /> Open</button><button className="btn ghost sm" onClick={() => A.delPdf(p.id)}><Icon name="trash" /> Remove</button></div></div></div>
             ))}
           </div>
         )

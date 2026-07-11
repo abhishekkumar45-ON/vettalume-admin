@@ -511,9 +511,16 @@ export const A = {
   },
   delQuestion(id) {
     const inMock = state.view === 'sectional' || state.view === 'full' || state.view === 'diagnostic';
-    const { list, q } = locateQ(id); const i = list.indexOf(q); if (i > -1) list.splice(i, 1); emit(); toast('Question deleted', 'del');
-    if (inMock) { persistMock(state.view); return; }
-    api.deleteItem(id).catch((e) => toast(e.message || 'Could not delete the question', 'del'));
+    const { list, q } = locateQ(id); const i = list.indexOf(q); if (i > -1) list.splice(i, 1); emit();
+    if (inMock) { toast('Question deleted', 'del'); persistMock(state.view); return; }
+    // Only confirm the delete once the backend actually removed it; on failure put the row back
+    // so the admin list never diverges from the database.
+    api.deleteItem(id)
+      .then(() => toast('Question deleted', 'del'))
+      .catch((e) => {
+        if (i > -1) { list.splice(i, 0, q); emit(); }
+        toast(e.message || 'Could not delete the question', 'del');
+      });
   },
   moveQuestion(id, dir) {
     const { list } = locateQ(id); const i = list.findIndex((q) => q.id === id); const j = dir === 'up' ? i - 1 : i + 1;
