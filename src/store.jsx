@@ -189,11 +189,15 @@ function labelToSec(d) {
 // exam's first one (loaded from the syllabus). Section is a backend concept here, invisible in the UI.
 const firstSectionKey = () => (state.lmsSections[state.exam] || [])[0]?.key || null;
 
-// Browser Back button: step up the learning drill-down (subtopic -> chapter -> chapter list) instead
-// of leaving the app. Paired with the history.pushState() calls in openChapter/openSubtopic below.
+// Browser Back button: step up one drill-down level instead of leaving the app — a mock editor or
+// results view returns to the mock list; the learning drill goes subtopic -> chapter -> chapter list.
+// Every "drill in" pushes one history entry (pushNav(), or the pushState calls in openChapter/
+// openSubtopic below), and this pops it.
+function pushNav() { if (typeof window !== 'undefined') { try { window.history.pushState({ nav: 1 }, ''); } catch (e) {} } }
 if (typeof window !== 'undefined') {
   window.addEventListener('popstate', () => {
-    if (state.sid) { state.sid = null; emit(); }
+    if (state.mock || state.results) { state.mock = null; state.results = null; emit(); }
+    else if (state.sid) { state.sid = null; emit(); }
     else if (state.cid) { state.cid = null; emit(); }
   });
 }
@@ -564,7 +568,13 @@ export const A = {
     try {
       const m = await api.createMock({ type: 'sectional', name: data.name, exam: state.exam, negative: data.negative || 0 });
       if (data.status === 'published') { const p = await api.toggleMockPublish(m.id); Object.assign(m, p); }
-      state.sectional[state.exam].push(m); state.mock = m.id; state.mockType = 'sectional'; state.results = null; emit(); toast('Mock created');
+      // Tie the mock to the chosen section so it appears under it on the student side.
+      if (data.section) {
+        const QN = { VARC: 24, DILR: 22, QA: 22 };
+        m.sections = [{ id: uid(), name: data.section, numQuestions: QN[data.section] || 22, time: 40, questions: [] }];
+        try { const upd = await api.setMockStructure(m.id, m.sections); Object.assign(m, upd); } catch (e) {}
+      }
+      state.sectional[state.exam].push(m); state.mock = m.id; state.mockType = 'sectional'; state.results = null; pushNav(); emit(); toast('Mock created');
     } catch (e) { toast(e.message || 'Could not create mock', 'del'); }
   },
   async saveSectionalConfig(m, data) {
@@ -579,7 +589,7 @@ export const A = {
     try { await api.deleteMock(id); state.sectional[state.exam] = state.sectional[state.exam].filter((m) => m.id !== id); emit(); toast('Mock deleted', 'del'); }
     catch (e) { toast(e.message || 'Could not delete mock', 'del'); }
   },
-  openSectional(id) { state.mock = id; state.mockType = 'sectional'; state.results = null; emit(); },
+  openSectional(id) { state.mock = id; state.mockType = 'sectional'; state.results = null; pushNav(); emit(); },
   addSection(data) { getMock('sectional').sections.push({ id: uid(), ...data, questions: [] }); emit(); toast('Section added'); persistMock('sectional'); },
   saveSection(sec, data) { Object.assign(sec, data); emit(); toast('Section updated'); persistMock('sectional'); },
   delSection(si) { const m = getMock('sectional'); m.sections.splice(si, 1); emit(); toast('Section removed', 'del'); persistMock('sectional'); },
@@ -589,7 +599,7 @@ export const A = {
     try {
       const m = await api.createMock({ type: 'full', name: data.name, exam: state.exam, duration: data.duration, scoringMarks: data.scoringMarks, scoringNeg: data.scoringNeg, instructions: data.instructions });
       if (data.status === 'published') { const p = await api.toggleMockPublish(m.id); Object.assign(m, p); }
-      state.full[state.exam].push(m); state.mock = m.id; state.mockType = 'full'; state.results = null; emit(); toast('Full mock created');
+      state.full[state.exam].push(m); state.mock = m.id; state.mockType = 'full'; state.results = null; pushNav(); emit(); toast('Full mock created');
     } catch (e) { toast(e.message || 'Could not create mock', 'del'); }
   },
   async saveFullConfig(m, data) {
@@ -600,7 +610,7 @@ export const A = {
       emit(); toast('Settings saved');
     } catch (e) { toast(e.message || 'Could not save settings', 'del'); }
   },
-  editFull(id) { state.mock = id; state.mockType = 'full'; state.results = null; emit(); },
+  editFull(id) { state.mock = id; state.mockType = 'full'; state.results = null; pushNav(); emit(); },
   async delFull(id) {
     try { await api.deleteMock(id); state.full[state.exam] = state.full[state.exam].filter((m) => m.id !== id); emit(); toast('Full mock deleted', 'del'); }
     catch (e) { toast(e.message || 'Could not delete mock', 'del'); }
@@ -610,10 +620,10 @@ export const A = {
     try {
       const m = await api.createMock({ type: 'diagnostic', name: data.name, exam: state.exam, duration: data.duration, scoringMarks: data.scoringMarks, scoringNeg: data.scoringNeg, instructions: data.instructions });
       if (data.status === 'published') { const p = await api.toggleMockPublish(m.id); Object.assign(m, p); }
-      state.diagnostic[state.exam].push(m); state.mock = m.id; state.mockType = 'diagnostic'; state.results = null; emit(); toast('Diagnostic test created');
+      state.diagnostic[state.exam].push(m); state.mock = m.id; state.mockType = 'diagnostic'; state.results = null; pushNav(); emit(); toast('Diagnostic test created');
     } catch (e) { toast(e.message || 'Could not create diagnostic', 'del'); }
   },
-  editDiagnostic(id) { state.mock = id; state.mockType = 'diagnostic'; state.results = null; emit(); },
+  editDiagnostic(id) { state.mock = id; state.mockType = 'diagnostic'; state.results = null; pushNav(); emit(); },
   async delDiagnostic(id) {
     try { await api.deleteMock(id); state.diagnostic[state.exam] = state.diagnostic[state.exam].filter((m) => m.id !== id); emit(); toast('Diagnostic deleted', 'del'); }
     catch (e) { toast(e.message || 'Could not delete diagnostic', 'del'); }
@@ -627,7 +637,7 @@ export const A = {
     try { const upd = await api.toggleMockPublish(m.id); Object.assign(m, upd); emit(); toast(upd.status === 'published' ? 'Published' : 'Moved to draft', upd.status === 'published' ? 'ok' : 'info'); }
     catch (e) { toast(e.message || 'Could not change publish status', 'del'); }
   },
-  openResults(id, type) { state.mock = id; state.mockType = type; state.results = true; emit(); },
+  openResults(id, type) { state.mock = id; state.mockType = type; state.results = true; pushNav(); emit(); },
   backResults() { state.results = null; emit(); },
 
   /* coupons — backed by the API */

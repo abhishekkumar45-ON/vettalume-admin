@@ -250,17 +250,20 @@ export function ImportPreview({ questions, target }) {
 /* ============================ Mocks ============================ */
 export function SectionalModal({ mock }) {
   const S = getState();
-  const [f, setF] = useState({ name: mock?.name || '', neg: mock?.negative ?? 1, status: mock?.status || 'draft' });
+  const [f, setF] = useState({ name: mock?.name || '', neg: mock?.negative ?? 1, status: mock?.status || 'draft', section: (SECS[S.exam] || [])[0] });
   const up = (k) => (v) => setF((s) => ({ ...s, [k]: v }));
-  const save = () => { if (!f.name) return; const data = { name: f.name, negative: +f.neg, status: f.status }; mock ? A.saveSectionalConfig(mock, data) : A.newSectional(data); closeModal(); };
+  const save = () => { if (!f.name) return; const data = { name: f.name, negative: +f.neg, status: f.status, section: f.section }; mock ? A.saveSectionalConfig(mock, data) : A.newSectional(data); closeModal(); };
   return (
     <Modal title={mock ? 'Configure sectional mock' : 'New sectional mock'} sub={S.exam} saveLabel={mock ? 'Save configuration' : 'Create mock'} onSave={save}>
       <Field label="Mock name" value={f.name} onChange={up('name')} placeholder="e.g. QA Sectional Mock 2" />
+      {!mock && (
+        <Field label="Section" value={f.section} onChange={up('section')} options={SECS[S.exam] || []} hint="which section this mock belongs to" />
+      )}
       <Row>
         <Field label="Negative marking" type="number" value={f.neg} onChange={up('neg')} hint="per wrong answer" />
         <Field label="Publishing status" value={f.status} onChange={up('status')} options={[{ v: 'draft', l: 'Draft' }, { v: 'published', l: 'Published' }]} />
       </Row>
-      <div className="hint">After creating the mock, add sections inside it — each with its own questions and time.</div>
+      <div className="hint">The mock opens on its section. Add its questions inside — each section keeps its own questions and time.</div>
     </Modal>
   );
 }
