@@ -74,7 +74,10 @@ function parseRow(row) {
     // --- everything else, carried through to provenance / item fields ---
     type,                                // 'tita' | 'mcq'
     correctAnswer: rawCorrect,           // verbatim answer (used for TITA)
-    passageId: clean(get('passage / set id', 'passage', 'set id')),
+    // Passage set id groups the questions of one RC/caselet; passage is the shared text shown on
+    // the left in VARC/DILR. The set-id header guard (header()) stops 'passage' latching onto the id.
+    passageId: clean(get('passage set id', 'passage / set id', 'set id')),
+    passage: clean(get('passage', 'reading passage', 'caselet', 'passage text')),
     source: clean(get('source')),
     whyLevel: clean(get('why this level', 'why level')),
     prerequisites,
@@ -104,6 +107,14 @@ export function parseFile(file) {
           const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: '' });
           rows.forEach((row) => { const q = parseRow(row); if (q.text) { q.sheet = name; out.push(q); } });
         });
+        // Share the passage text across every question in the same set, so it only has to be typed
+        // once (on any one row of the set); blank rows inherit it.
+        const bySet = {};
+        out.forEach((q) => { if (q.passageId) (bySet[q.passageId] = bySet[q.passageId] || []).push(q); });
+        Object.values(bySet).forEach((grp) => {
+          const p = (grp.find((q) => q.passage) || {}).passage || '';
+          if (p) grp.forEach((q) => { if (!q.passage) q.passage = p; });
+        });
         resolve(out);
       } catch (err) { reject(err); }
     };
@@ -112,21 +123,48 @@ export function parseFile(file) {
   });
 }
 
-/** Download a starter question template showing the full tag set (one MCQ + one TITA example). */
+/** Download a starter question template. Shows a standalone MCQ + TITA, and a VARC passage set:
+ *  two questions sharing one "Passage Set ID" — the passage text is typed on the first row only and
+ *  the rest inherit it. Fill "Passage" (and the same "Passage Set ID") for every RC/DILR set. */
 export function downloadTemplate() {
-  const cols = ['Question ID', 'Section', 'Topic', 'Subtopic', 'Prerequisites', 'Difficulty (-2 to 2)',
-    'Question type', 'Question text', 'Option A', 'Option B', 'Option C', 'Option D', 'Correct answer',
-    'Solution / explanation', 'Why this level', 'Expected time (sec)', 'Passage / Set ID', 'Source',
+  const cols = ['Question ID', 'Section', 'Topic', 'Subtopic', 'Passage Set ID', 'Passage',
+    'Prerequisites', 'Difficulty (-2 to 2)', 'Question type', 'Question text',
+    'Option A', 'Option B', 'Option C', 'Option D', 'Correct answer',
+    'Solution / explanation', 'Why this level', 'Expected time (sec)', 'Source',
     'Status', 'Weighted rating (/10)', 'Calc intensity (/10)', 'Time (/10)', 'Critical thinking (/10)',
     'Concept load (/10)', 'Calc note', 'Time note', 'Thinking note', 'Concept note', 'Image URL'];
-  const mcq = ['CAT-QA-0001', 'QA', 'Averages', 'Basic averages', 'Arithmetic mean', '-1', 'MCQ',
+  const mcq = ['CAT-QA-0001', 'QA', 'Averages', 'Basic averages', '-', '-', 'Arithmetic mean', '-1', 'MCQ',
     'Find the average of 7, 3, 5 and 9.', '5', '6', '7', '8', 'B', 'Sum 24 / 4 = 6', 'Level -1: one clean step.',
-    '40', '-', 'Vettalume', 'approved', 2, 2, 2, 2, 2, 'one division', 'under a minute', 'direct', 'single concept', ''];
-  const tita = ['CAT-QA-0002', 'QA', 'Quadratic Equations', 'Modelling', 'Solving quadratics', '-2', 'TITA',
+    '40', 'Vettalume', 'approved', 2, 2, 2, 2, 2, 'one division', 'under a minute', 'direct', 'single concept', ''];
+  const tita = ['CAT-QA-0002', 'QA', 'Quadratic Equations', 'Modelling', '-', '-', 'Solving quadratics', '-2', 'TITA',
     'The product of two consecutive positive integers is 56. Find the smaller integer.', '-', '-', '-', '-', '7',
-    'n(n+1)=56 -> n=7.', 'Level -2: one factorisation.', '40', '-', 'Vettalume', 'draft', 2, 2, 2, 2, 2,
+    'n(n+1)=56 -> n=7.', 'Level -2: one factorisation.', '40', 'Vettalume', 'draft', 2, 2, 2, 2, 2,
     'one factorisation', 'under a minute', 'set up integers', 'word to quadratic', ''];
-  const ws = XLSX.utils.aoa_to_sheet([cols, mcq, tita]);
+  const passage =
+    'Octopuses are like aliens living among us — they do a lot of things differently from land animals. '
+    + 'They squirt the molecular equivalent of red ink over their genetic instructions: these edits modify RNA, '
+    + 'the molecule used to translate information from the DNA blueprint, while leaving the DNA unaltered. '
+    + 'In longfin squids’ nervous systems, 70 percent of edits in protein-producing RNAs recode proteins, '
+    + 'and RNAs in the nervous system of the California two-spot octopus are recoded three to six times as often '
+    + 'as in other organs.';
+  // VARC set: two questions, same "Passage Set ID" (VARC-P1). Passage typed on row 1 only; row 2 inherits it.
+  const varc1 = ['CAT-VARC-0001', 'VARC', 'Reading Comprehension', 'Inference', 'VARC-P1', passage, '-', '0', 'MCQ',
+    'Which of the following is true based on the passage?',
+    'Unlike gene duplication, RNA editing alters an organism’s DNA.',
+    'RNA editing modifies RNA while leaving the DNA unaltered.',
+    'RNA editing creates entirely new genes.',
+    'Gene duplication only occurs in the nervous system.',
+    'B', 'The passage states RNA editing leaves DNA unaltered.', 'Level 0: direct inference.',
+    '120', 'Vettalume', 'approved', 2, 2, 2, 2, 2, '-', '-', '-', '-', ''];
+  const varc2 = ['CAT-VARC-0002', 'VARC', 'Reading Comprehension', 'Detail', 'VARC-P1', '', '-', '0', 'MCQ',
+    'According to the passage, RNA editing in the nervous system is:',
+    'rarer than in other tissues.',
+    'far more frequent than in other organs.',
+    'absent in squid.',
+    'limited to the DNA.',
+    'B', 'RNAs in the nervous system are recoded three to six times as often.', 'Level 0: locate detail.',
+    '90', 'Vettalume', 'approved', 2, 2, 2, 2, 2, '-', '-', '-', '-', ''];
+  const ws = XLSX.utils.aoa_to_sheet([cols, mcq, tita, varc1, varc2]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Questions');
   XLSX.writeFile(wb, 'vettalume_question_template.xlsx');
