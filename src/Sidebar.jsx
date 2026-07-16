@@ -9,7 +9,7 @@ const NAV = [
   { grp: 'Billing', items: [['coupons', 'Coupons', 'clip']] },
   { grp: 'Catalog', items: [['courses', 'Courses', 'layers']] },
   { grp: 'Learning', items: [['learning', 'Chapters & Content', 'book']] },
-  { grp: 'Assessments', items: [['diagnostic', 'Diagnostic Test', 'award'], ['sectional', 'Sectional Mocks', 'clip'], ['full', 'Full Mocks', 'file']] },
+  { grp: 'Assessments', items: [['diagnostic', 'Diagnostic Test', 'award'], ['sectional', 'Sectional Mocks', 'clip'], ['full', 'Full Mocks', 'file'], ['media', 'Question Images', 'image']] },
   { grp: 'Insights', items: [['reports', 'Reports', 'bar']] },
   { grp: 'System', items: [['settings', 'Settings', 'settings']] },
 ];

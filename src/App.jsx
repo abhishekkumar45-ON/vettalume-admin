@@ -12,16 +12,17 @@ import { Students, Payments } from './pages/People.jsx';
 import Coupons from './pages/Coupons.jsx';
 import Learning from './pages/Learning.jsx';
 import { Sectional, Full, Diagnostic } from './pages/Mocks.jsx';
+import Media from './pages/Media.jsx';
 
 const VIEWS = {
   dashboard: 'Dashboard', students: 'Students', payments: 'Payments', coupons: 'Coupons',
   courses: 'Courses', learning: 'Learning', sectional: 'Sectional Mocks', full: 'Full Mocks', diagnostic: 'Diagnostic Test',
-  reports: 'Reports', settings: 'Settings',
+  media: 'Question Images', reports: 'Reports', settings: 'Settings',
 };
 const PAGES = {
   dashboard: Dashboard, students: Students, payments: Payments, coupons: Coupons,
   courses: Courses, learning: Learning, sectional: Sectional, full: Full, diagnostic: Diagnostic,
-  reports: Reports, settings: Settings,
+  media: Media, reports: Reports, settings: Settings,
 };
 
 export default function App() {

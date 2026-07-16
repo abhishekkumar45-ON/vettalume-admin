@@ -2,7 +2,7 @@
 //
 // Override the backend URL without touching code by creating a .env file:
 //   VITE_API_URL=http://localhost:8001
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+export const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
 const TOKEN_KEY = 'vettalume_admin_token';
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
@@ -138,6 +138,17 @@ export const uploadConceptQuiz = (conceptId, file, scope = 'both') =>
 export const uploadBankXlsx = (file, scope = 'both') =>
   upload(`/admin/items/upload-xlsx?scope=${scope}`, file);
 
+/* ---------------------------------------------------------- admin: media
+   Question images. Each file is stored keyed by its filename minus extension
+   (q123.png -> key "q123"); the public {BASE}/media/{key} serves the bytes. */
+export const uploadMedia = (files) => {
+  const fd = new FormData();
+  for (const f of files) fd.append('files', f);
+  return request('/admin/media', { method: 'POST', form: fd });
+};
+export const listMedia = () => get('/admin/media');
+export const deleteMedia = (key) => del(`/admin/media/${encodeURIComponent(key)}`);
+
 /* ---------------------------------------------------------- admin: students */
 export const getStudents = (q = '') => get(`/admin/students${q ? `?q=${encodeURIComponent(q)}` : ''}`);
 export const getStudent = (id) => get(`/admin/students/${encodeURIComponent(id)}`);
@@ -180,6 +191,7 @@ export default {
   getSyllabus, addTopic, addConcept, deleteNode, renameNode,
   getContent, setContent, getMaterials, openMaterial, uploadMaterial, deleteMaterial,
   getItems, ingestItems, createItem, patchItem, deleteItem, uploadConceptQuiz, uploadBankXlsx,
+  uploadMedia, listMedia, deleteMedia,
   getStudents, getStudent, createStudent, updateStudent, deleteStudent,
   verifyStudent, setStudentPayment, setStudentEnrollments, enrollStudent, deregisterStudent,
   getCoupons, createCoupon, updateCoupon, toggleCoupon, deleteCoupon,
