@@ -149,6 +149,13 @@ export const uploadMedia = (files) => {
 export const listMedia = () => get('/admin/media');
 export const deleteMedia = (key) => del(`/admin/media/${encodeURIComponent(key)}`);
 
+/* ------------------------------------------------------- admin: contact-us
+   Contact-form submissions. Newest first; handled/unhandled is a toggle. */
+export const getContact = () => get('/admin/contact');
+export const setContactHandled = (id, handled) =>
+  request(`/admin/contact/${encodeURIComponent(id)}?handled=${handled ? 'true' : 'false'}`, { method: 'PATCH' });
+export const deleteContact = (id) => del(`/admin/contact/${encodeURIComponent(id)}`);
+
 /* ---------------------------------------------------------- admin: students */
 export const getStudents = (q = '') => get(`/admin/students${q ? `?q=${encodeURIComponent(q)}` : ''}`);
 export const getStudent = (id) => get(`/admin/students/${encodeURIComponent(id)}`);
@@ -192,6 +199,7 @@ export default {
   getContent, setContent, getMaterials, openMaterial, uploadMaterial, deleteMaterial,
   getItems, ingestItems, createItem, patchItem, deleteItem, uploadConceptQuiz, uploadBankXlsx,
   uploadMedia, listMedia, deleteMedia,
+  getContact, setContactHandled, deleteContact,
   getStudents, getStudent, createStudent, updateStudent, deleteStudent,
   verifyStudent, setStudentPayment, setStudentEnrollments, enrollStudent, deregisterStudent,
   getCoupons, createCoupon, updateCoupon, toggleCoupon, deleteCoupon,
