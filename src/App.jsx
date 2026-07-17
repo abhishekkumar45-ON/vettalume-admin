@@ -112,10 +112,7 @@ function Auth() {
     <div className="auth">
       <div className="authcard">
         <div className="lg">
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-            <path d="M3 4 L13 22 L23 4" stroke="#c8932e" strokeWidth="2.2" strokeLinecap="square" />
-            <path d="M8.5 4 L13 12.5 L17.5 4" stroke="#181a18" strokeWidth="2.2" strokeLinecap="square" />
-          </svg>
+          <img src="/logo-mark.png" alt="Vettalume" style={{ height: 32, width: 'auto', display: 'block' }} />
           <div className="wm">Vetta<span className="lm">lume</span></div>
         </div>
         <h2>Admin sign in</h2>
