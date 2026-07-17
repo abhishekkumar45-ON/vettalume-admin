@@ -156,6 +156,15 @@ export const setContactHandled = (id, handled) =>
   request(`/admin/contact/${encodeURIComponent(id)}?handled=${handled ? 'true' : 'false'}`, { method: 'PATCH' });
 export const deleteContact = (id) => del(`/admin/contact/${encodeURIComponent(id)}`);
 
+/* ------------------------------------------------------------ admin: admins
+   Manage which accounts have admin access. List returns [{account_id, role, email, display_name}].
+   Create either makes a new admin account with that password or resets password + grants admin
+   if the email already exists. Delete revokes admin (400 if you try to revoke yourself). */
+export const getAdmins = () => get('/admin/admins');
+export const createAdmin = ({ email, password, displayName }) =>
+  post('/admin/admins', { email, password, display_name: displayName });
+export const deleteAdmin = (accountId) => del(`/admin/admins/${encodeURIComponent(accountId)}`);
+
 /* ---------------------------------------------------------- admin: students */
 export const getStudents = (q = '') => get(`/admin/students${q ? `?q=${encodeURIComponent(q)}` : ''}`);
 export const getStudent = (id) => get(`/admin/students/${encodeURIComponent(id)}`);
@@ -200,6 +209,7 @@ export default {
   getItems, ingestItems, createItem, patchItem, deleteItem, uploadConceptQuiz, uploadBankXlsx,
   uploadMedia, listMedia, deleteMedia,
   getContact, setContactHandled, deleteContact,
+  getAdmins, createAdmin, deleteAdmin,
   getStudents, getStudent, createStudent, updateStudent, deleteStudent,
   verifyStudent, setStudentPayment, setStudentEnrollments, enrollStudent, deregisterStudent,
   getCoupons, createCoupon, updateCoupon, toggleCoupon, deleteCoupon,

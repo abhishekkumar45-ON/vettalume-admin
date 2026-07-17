@@ -11,7 +11,7 @@ const NAV = [
   { grp: 'Learning', items: [['learning', 'Chapters & Content', 'book']] },
   { grp: 'Assessments', items: [['diagnostic', 'Diagnostic Test', 'award'], ['sectional', 'Sectional Mocks', 'clip'], ['full', 'Full Mocks', 'file'], ['media', 'Question Images', 'image']] },
   { grp: 'Insights', items: [['reports', 'Reports', 'bar']] },
-  { grp: 'Support', items: [['messages', 'Messages', 'mail']] },
+  { grp: 'Support', items: [['messages', 'Messages', 'mail'], ['admins', 'Admins', 'shield']] },
   { grp: 'System', items: [['settings', 'Settings', 'settings']] },
 ];
 

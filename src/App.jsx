@@ -14,16 +14,17 @@ import Learning from './pages/Learning.jsx';
 import { Sectional, Full, Diagnostic } from './pages/Mocks.jsx';
 import Media from './pages/Media.jsx';
 import Messages from './pages/Messages.jsx';
+import Admins from './pages/Admins.jsx';
 
 const VIEWS = {
   dashboard: 'Dashboard', students: 'Students', payments: 'Payments', coupons: 'Coupons',
   courses: 'Courses', learning: 'Learning', sectional: 'Sectional Mocks', full: 'Full Mocks', diagnostic: 'Diagnostic Test',
-  media: 'Question Images', reports: 'Reports', messages: 'Messages', settings: 'Settings',
+  media: 'Question Images', reports: 'Reports', messages: 'Messages', admins: 'Admins', settings: 'Settings',
 };
 const PAGES = {
   dashboard: Dashboard, students: Students, payments: Payments, coupons: Coupons,
   courses: Courses, learning: Learning, sectional: Sectional, full: Full, diagnostic: Diagnostic,
-  media: Media, reports: Reports, messages: Messages, settings: Settings,
+  media: Media, reports: Reports, messages: Messages, admins: Admins, settings: Settings,
 };
 
 export default function App() {
@@ -97,7 +98,7 @@ function Shell() {
 
 /* --------------------------- auth gate --------------------------- */
 function Auth() {
-  const [email, setEmail] = useState('admin@vettalume.com');
+  const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -118,12 +119,11 @@ function Auth() {
         <h2>Admin sign in</h2>
         <div className="as">Secure access to the platform console.</div>
         <div className="field"><label>Email</label>
-          <input type="email" placeholder="admin@vettalume.com" value={email} disabled={busy} onChange={(e) => { setEmail(e.target.value); setErr(''); }} onKeyDown={(e) => e.key === 'Enter' && submit()} /></div>
+          <input type="email" placeholder="you@company.com" value={email} disabled={busy} onChange={(e) => { setEmail(e.target.value); setErr(''); }} onKeyDown={(e) => e.key === 'Enter' && submit()} /></div>
         <div className="field"><label>Password</label>
           <input type="password" placeholder="••••••••" value={pass} disabled={busy} onChange={(e) => { setPass(e.target.value); setErr(''); }} onKeyDown={(e) => e.key === 'Enter' && submit()} /></div>
         {err && <div style={{ color: '#b23b3b', background: '#fbeeee', border: '1px solid #f1d4d4', borderRadius: 8, padding: '8px 11px', fontSize: 13, marginTop: 12 }}>{err}</div>}
         <button className="btn primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} disabled={busy} onClick={submit}>{busy ? 'Signing in…' : 'Sign in'}</button>
-        <div className="demo">Sign in with a backend admin account. Create one with <b>python -m scripts.create_admin &lt;email&gt; &lt;password&gt;</b></div>
       </div>
     </div>
   );
