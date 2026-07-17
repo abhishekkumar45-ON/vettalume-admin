@@ -114,6 +114,8 @@ export function Reports() {
 
 export function Settings() {
   const S = useStore();
+  const [admin, setAdmin] = useState(null);
+  useEffect(() => { me().then(setAdmin).catch(() => {}); }, []);
   return (
     <>
       <PageHead eyebrow="System" title="Settings" desc="Platform configuration and administrator preferences." />
@@ -124,8 +126,8 @@ export function Settings() {
           <div className="field"><label>Default difficulty scale</label><input defaultValue="−2 to +2 (0 = average)" disabled /></div>
           <button className="btn primary"><Icon name="check" /> Save changes</button></div>
         <div className="card panel"><div className="panel-h"><div className="t">Administrator</div></div>
-          <div className="field"><label>Name</label><input defaultValue="Aanya Verma" /></div>
-          <div className="field"><label>Email</label><input defaultValue="admin@vettalume.com" /></div>
+          <div className="field"><label>Name</label><input key={'n' + (admin?.account_id || '')} defaultValue={admin?.display_name || ''} /></div>
+          <div className="field"><label>Email</label><input key={'e' + (admin?.account_id || '')} defaultValue={admin?.email || ''} disabled /></div>
           <div className="field"><label>Role</label><input defaultValue="Administrator — full access" disabled /></div>
           <button className="btn primary"><Icon name="check" /> Save changes</button></div>
       </div>
