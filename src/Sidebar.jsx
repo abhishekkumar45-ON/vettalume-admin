@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from './icons.jsx';
 import { useStore, A } from './store.jsx';
-import { EXC } from './helpers.js';
+import { EXC, initials } from './helpers.js';
+import { me } from './api.js';
 
 const NAV = [
   { grp: 'Overview', items: [['dashboard', 'Dashboard', 'grid']] },
@@ -27,6 +28,11 @@ export default function Sidebar({ onNavigate }) {
     courses: 3,
   };
   const go = (view) => { A.nav(view); onNavigate && onNavigate(); };
+  // Show the actually-logged-in admin (from /admin/me), not a placeholder.
+  const [admin, setAdmin] = useState(null);
+  useEffect(() => { me().then(setAdmin).catch(() => {}); }, []);
+  const adminName =
+    (admin?.display_name || '').trim() || (admin?.email ? admin.email.split('@')[0] : '') || 'Admin';
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -58,8 +64,8 @@ export default function Sidebar({ onNavigate }) {
 
       <div className="side-foot">
         <div className="adminchip">
-          <div className="av">AV</div>
-          <div><div className="nm">Aanya Verma</div><div className="rl">Administrator</div></div>
+          <div className="av">{initials(adminName) || 'A'}</div>
+          <div><div className="nm">{adminName}</div><div className="rl">Administrator</div></div>
           <button className="logout-btn" onClick={() => A.logout()} title="Sign out"><Icon name="logout" /></button>
         </div>
       </div>

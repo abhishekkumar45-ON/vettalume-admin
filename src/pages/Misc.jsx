@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '../icons.jsx';
 import { useStore, A, allSubs, countQuestions, enrollCount, totalEnroll, publishedMocks } from '../store.jsx';
+import { me } from '../api.js';
 import { PageHead, Stat, AreaChart, Donut, VBars, ExamTag } from '../ui.jsx';
 import { EXC } from '../helpers.js';
 
 export function Dashboard() {
   const S = useStore();
+  const [admin, setAdmin] = useState(null);
+  useEffect(() => { me().then(setAdmin).catch(() => {}); }, []);
+  const firstName =
+    (admin?.display_name || '').trim().split(/\s+/)[0] ||
+    (admin?.email ? admin.email.split('@')[0] : '') || 'there';
   const q = ['CAT', 'GMAT', 'GRE'].reduce((a, e) => a + countQuestions(e), 0);
   const chap = ['CAT', 'GMAT', 'GRE'].reduce((a, e) => a + S.lms[e].length, 0);
   const subs = ['CAT', 'GMAT', 'GRE'].reduce((a, e) => a + allSubs(e).length, 0);
@@ -18,7 +24,7 @@ export function Dashboard() {
   ];
   return (
     <>
-      <PageHead eyebrow="Platform overview" title="Good evening, Aanya" desc="Everything across CAT, GMAT and GRE — students, content and assessments at a glance."
+      <PageHead eyebrow="Platform overview" title={`Good evening, ${firstName}`} desc="Everything across CAT, GMAT and GRE — students, content and assessments at a glance."
         actions={<><button className="btn ghost" onClick={() => A.nav('students')}><Icon name="users" /> Manage students</button><button className="btn primary" onClick={() => A.nav('learning')}><Icon name="plus" /> Add content</button></>} />
       <div className="grid cols-4 mb16">
         <Stat icon="users" value={S.students.length} label="Total students" delta="+8.2%" up />
