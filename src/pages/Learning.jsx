@@ -35,6 +35,8 @@ function ChapterList() {
               <div className="lc-meta">
                 {c.section ? <span className="mchip" title="Section">{c.section}</span> : null}
                 <span className="mchip"><Icon name="book" /> {c.subs.length}</span>
+                <button className="ibtn" title="Move up" disabled={i === 0} onClick={(e) => { e.stopPropagation(); A.moveChapter(c, -1); }}><Icon name="chevU" /></button>
+                <button className="ibtn" title="Move down" disabled={i === list.length - 1} onClick={(e) => { e.stopPropagation(); A.moveChapter(c, 1); }}><Icon name="chevD" /></button>
                 <button className="ibtn" title="Edit / move to another section" onClick={(e) => { e.stopPropagation(); openModal(<ChapterModal chapter={c} />); }}><Icon name="edit" /></button>
                 <button className="ibtn del" title="Delete" onClick={(e) => { e.stopPropagation(); openModal(<ConfirmDelete what={c.name} onYes={() => A.delChapter(c.id)} />); }}><Icon name="trash" /></button>
                 <Icon name="chevR" />

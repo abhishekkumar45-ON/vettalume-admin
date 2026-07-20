@@ -407,6 +407,17 @@ export const A = {
     try { await api.renameNode(ch.id, name); ch.name = name; emit(); toast('Chapter renamed'); }
     catch (e) { toast(e.message || 'Could not rename chapter', 'del'); }
   },
+  // Move a chapter up/down in the list (dir = -1 up, +1 down) and persist the new order.
+  async moveChapter(ch, dir) {
+    const list = state.lms[state.exam];
+    const i = list.findIndex((c) => c.id === ch.id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    emit();
+    try { await api.reorderNodes(list.map((c) => c.id)); }
+    catch (e) { toast(e.message || 'Could not save the new order', 'del'); }
+  },
   // Rename and/or move a chapter to another section (its subtopics + questions move too).
   async editChapter(ch, name, sectionKey) {
     const moved = sectionKey && sectionKey !== ch.section;
