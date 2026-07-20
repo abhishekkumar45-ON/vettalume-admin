@@ -117,6 +117,7 @@ function SubtopicView({ chapter: ch, sub: s }) {
           <TabBtn t="concepts" label="Concept" icn="book" />
           <TabBtn t="videos" label="Videos" icn="video" n={s.videos.length} />
           <TabBtn t="quiz" label="Quiz" icn="list" n={s.quiz.length} />
+          <button title="Upload this subtopic's practice questions" onClick={() => A.openPracticeBank(s.id)}><Icon name="list" /> Practice</button>
         </div>
       )}
       <div>{
