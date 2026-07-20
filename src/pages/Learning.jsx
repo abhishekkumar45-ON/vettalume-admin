@@ -33,8 +33,9 @@ function ChapterList() {
               <div className="nidx">{i + 1}</div>
               <div><div className="lc-t">{c.name}</div><div className="lc-s">{c.subs.length} subtopic{c.subs.length !== 1 ? 's' : ''} · {c.subs.reduce((a, s) => a + s.quiz.length, 0)} questions</div></div>
               <div className="lc-meta">
+                {c.section ? <span className="mchip" title="Section">{c.section}</span> : null}
                 <span className="mchip"><Icon name="book" /> {c.subs.length}</span>
-                <button className="ibtn" title="Rename" onClick={(e) => { e.stopPropagation(); openModal(<ChapterModal chapter={c} />); }}><Icon name="edit" /></button>
+                <button className="ibtn" title="Edit / move to another section" onClick={(e) => { e.stopPropagation(); openModal(<ChapterModal chapter={c} />); }}><Icon name="edit" /></button>
                 <button className="ibtn del" title="Delete" onClick={(e) => { e.stopPropagation(); openModal(<ConfirmDelete what={c.name} onYes={() => A.delChapter(c.id)} />); }}><Icon name="trash" /></button>
                 <Icon name="chevR" />
               </div>

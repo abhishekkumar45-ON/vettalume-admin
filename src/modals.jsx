@@ -115,11 +115,20 @@ export function ChapterModal({ chapter }) {
   const [sectionKey, setSectionKey] = useState(chapter?.section || sections[0]?.key || '');
   const save = () => {
     if (!name.trim()) return;
-    chapter ? A.renameChapter(chapter, name.trim()) : A.addChaptersBulk(name, sectionKey);
+    chapter ? A.editChapter(chapter, name.trim(), sectionKey) : A.addChaptersBulk(name, sectionKey);
     closeModal();
   };
   return (
-    <Modal title={chapter ? 'Rename chapter' : 'Add chapters'} sub={S.exam} saveLabel={chapter ? 'Save' : 'Add chapters'} onSave={save}>
+    <Modal title={chapter ? 'Edit chapter' : 'Add chapters'} sub={S.exam} saveLabel={chapter ? 'Save' : 'Add chapters'} onSave={save}>
+      {sections.length > 0 ? (
+        <Field
+          label="Section"
+          options={sections.map((s) => ({ v: s.key, l: s.name || s.key }))}
+          value={sectionKey}
+          onChange={setSectionKey}
+          hint={chapter ? 'Change this to move the chapter (and its subtopics) to another section.' : 'Which section these chapters go into.'}
+        />
+      ) : null}
       {chapter ? (
         <Field label="Chapter name" value={name} onChange={setName} placeholder="e.g. Arithmetic" />
       ) : (
@@ -132,14 +141,6 @@ export function ChapterModal({ chapter }) {
           hint="Add several at once — one chapter per line."
         />
       )}
-      {!chapter && sections.length > 0 ? (
-        <Field
-          label="Section"
-          options={sections.map((s) => ({ v: s.key, l: s.name || s.key }))}
-          value={sectionKey}
-          onChange={setSectionKey}
-        />
-      ) : null}
     </Modal>
   );
 }

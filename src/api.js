@@ -85,8 +85,8 @@ export const addConcept = (exam, sectionKey, id, name, parentId) =>
 
 export const deleteNode = (id, cascade) =>
   del(`/admin/nodes/${encodeURIComponent(id)}${cascade ? '?cascade=1' : ''}`);
-export const renameNode = (id, name) =>
-  request(`/admin/nodes/${encodeURIComponent(id)}`, { method: 'PATCH', body: { name } });
+export const renameNode = (id, name, sectionKey) =>
+  request(`/admin/nodes/${encodeURIComponent(id)}`, { method: 'PATCH', body: { name, section_key: sectionKey } });
 // Get-or-create a chapter's hidden practice-question bank; returns { id } to author questions into.
 export const ensurePracticeBank = (nodeId) =>
   post(`/admin/nodes/${encodeURIComponent(nodeId)}/practice-bank`);

@@ -407,6 +407,17 @@ export const A = {
     try { await api.renameNode(ch.id, name); ch.name = name; emit(); toast('Chapter renamed'); }
     catch (e) { toast(e.message || 'Could not rename chapter', 'del'); }
   },
+  // Rename and/or move a chapter to another section (its subtopics + questions move too).
+  async editChapter(ch, name, sectionKey) {
+    const moved = sectionKey && sectionKey !== ch.section;
+    try {
+      await api.renameNode(ch.id, name, moved ? sectionKey : undefined);
+      ch.name = name;
+      if (moved) ch.section = sectionKey;
+      emit();
+      toast(moved ? `Chapter moved to ${sectionKey}` : 'Chapter updated');
+    } catch (e) { toast(e.message || 'Could not update chapter', 'del'); }
+  },
   async delChapter(id) {
     // cascade=1 removes the chapter, its subtopics, and all their questions in one call.
     try {
