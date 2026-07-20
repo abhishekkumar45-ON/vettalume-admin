@@ -108,11 +108,11 @@ export function EnrollModal({ student: s }) {
 }
 
 /* ============================ Chapters / subtopics / media ============================ */
-export function ChapterModal({ chapter }) {
+export function ChapterModal({ chapter, defaultSection }) {
   const [name, setName] = useState(chapter?.name || '');
   const S = getState();
   const sections = (S.lmsSections && S.lmsSections[S.exam]) || [];
-  const [sectionKey, setSectionKey] = useState(chapter?.section || sections[0]?.key || '');
+  const [sectionKey, setSectionKey] = useState(chapter?.section || defaultSection || sections[0]?.key || '');
   const save = () => {
     if (!name.trim()) return;
     chapter ? A.editChapter(chapter, name.trim(), sectionKey) : A.addChaptersBulk(name, sectionKey);

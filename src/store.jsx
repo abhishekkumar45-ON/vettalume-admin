@@ -407,13 +407,16 @@ export const A = {
     try { await api.renameNode(ch.id, name); ch.name = name; emit(); toast('Chapter renamed'); }
     catch (e) { toast(e.message || 'Could not rename chapter', 'del'); }
   },
-  // Move a chapter up/down in the list (dir = -1 up, +1 down) and persist the new order.
+  // Move a chapter up/down WITHIN its section (dir = -1 up, +1 down) and persist the new order.
   async moveChapter(ch, dir) {
     const list = state.lms[state.exam];
-    const i = list.findIndex((c) => c.id === ch.id);
-    const j = i + dir;
-    if (i < 0 || j < 0 || j >= list.length) return;
-    [list[i], list[j]] = [list[j], list[i]];
+    // positions (in the global array) of the chapters in this chapter's section, in order
+    const inSec = list.map((c, idx) => ({ c, idx })).filter((x) => x.c.section === ch.section);
+    const pos = inSec.findIndex((x) => x.c.id === ch.id);
+    const target = inSec[pos + dir];
+    if (pos < 0 || !target) return;
+    const gi = inSec[pos].idx, gj = target.idx;
+    [list[gi], list[gj]] = [list[gj], list[gi]];   // swap the two same-section chapters globally
     emit();
     try { await api.reorderNodes(list.map((c) => c.id)); }
     catch (e) { toast(e.message || 'Could not save the new order', 'del'); }

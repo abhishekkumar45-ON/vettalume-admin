@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '../icons.jsx';
 import { useStore, A, openModal, startImport, chapterById, subById } from '../store.jsx';
 import { PageHead, Empty, QuestionRow, RichText, ConceptPane, IconBtn } from '../ui.jsx';
@@ -19,24 +19,43 @@ export default function Learning() {
 
 function ChapterList() {
   const S = useStore();
-  const list = S.lms[S.exam];
+  const list = S.lms[S.exam] || [];
+  const sections = (S.lmsSections && S.lmsSections[S.exam]) || [];
+  const [sec, setSec] = useState('');
+  const activeSec = sec || sections[0]?.key || '';
+  const shown = list.filter((c) => c.section === activeSec);
   return (
     <>
       <PageHead eyebrow={`${S.exam} · catalog`} eyebrowColor={EXC[S.exam]} title="Chapters & content"
-        desc="Build the learning library: chapters, subtopics, concepts, videos and quizzes."
-        actions={<button className="btn primary" onClick={() => openModal(<ChapterModal />)}><Icon name="plus" /> Add chapters</button>} />
-      {list.length ? (
+        desc="Pick a section, then build its chapters, subtopics, concepts, videos and quizzes."
+        actions={<button className="btn primary" onClick={() => openModal(<ChapterModal defaultSection={activeSec} />)}><Icon name="plus" /> Add chapters</button>} />
+      {sections.length > 0 ? (
+        <div className="secTabs" style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+          {sections.map((s) => {
+            const n = list.filter((c) => c.section === s.key).length;
+            return (
+              <button
+                key={s.key}
+                className={`btn${activeSec === s.key ? ' primary' : ''}`}
+                onClick={() => setSec(s.key)}
+                title={s.name || s.key}
+              >
+                {s.key} <span style={{ opacity: 0.65 }}>({n})</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+      {shown.length ? (
         <div className="card">
-          {list.map((c, i) => (
+          {shown.map((c, i) => (
             <div className="lcard" key={c.id} onClick={() => A.openChapter(c.id)}>
-              <span className="draghint" title="Drag to reorder"><Icon name="grip" /></span>
               <div className="nidx">{i + 1}</div>
               <div><div className="lc-t">{c.name}</div><div className="lc-s">{c.subs.length} subtopic{c.subs.length !== 1 ? 's' : ''} · {c.subs.reduce((a, s) => a + s.quiz.length, 0)} questions</div></div>
               <div className="lc-meta">
-                {c.section ? <span className="mchip" title="Section">{c.section}</span> : null}
                 <span className="mchip"><Icon name="book" /> {c.subs.length}</span>
                 <button className="ibtn" title="Move up" disabled={i === 0} onClick={(e) => { e.stopPropagation(); A.moveChapter(c, -1); }}><Icon name="chevU" /></button>
-                <button className="ibtn" title="Move down" disabled={i === list.length - 1} onClick={(e) => { e.stopPropagation(); A.moveChapter(c, 1); }}><Icon name="chevD" /></button>
+                <button className="ibtn" title="Move down" disabled={i === shown.length - 1} onClick={(e) => { e.stopPropagation(); A.moveChapter(c, 1); }}><Icon name="chevD" /></button>
                 <button className="ibtn" title="Edit / move to another section" onClick={(e) => { e.stopPropagation(); openModal(<ChapterModal chapter={c} />); }}><Icon name="edit" /></button>
                 <button className="ibtn del" title="Delete" onClick={(e) => { e.stopPropagation(); openModal(<ConfirmDelete what={c.name} onYes={() => A.delChapter(c.id)} />); }}><Icon name="trash" /></button>
                 <Icon name="chevR" />
@@ -45,7 +64,7 @@ function ChapterList() {
           ))}
         </div>
       ) : (
-        <div className="card"><Empty icon="folder" title={`No chapters for ${S.exam}`} text="Add your first chapter, such as “Arithmetic”." action={<button className="btn primary" onClick={() => openModal(<ChapterModal />)}><Icon name="plus" /> Add chapters</button>} /></div>
+        <div className="card"><Empty icon="folder" title={`No chapters in ${activeSec || S.exam}`} text={`Add your first ${activeSec} chapter.`} action={<button className="btn primary" onClick={() => openModal(<ChapterModal defaultSection={activeSec} />)}><Icon name="plus" /> Add chapters</button>} /></div>
       )}
     </>
   );
