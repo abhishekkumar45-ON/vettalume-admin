@@ -24,7 +24,7 @@ function ChapterList() {
     <>
       <PageHead eyebrow={`${S.exam} · catalog`} eyebrowColor={EXC[S.exam]} title="Chapters & content"
         desc="Build the learning library: chapters, subtopics, concepts, videos and quizzes."
-        actions={<button className="btn primary" onClick={() => openModal(<ChapterModal />)}><Icon name="plus" /> Add chapter</button>} />
+        actions={<button className="btn primary" onClick={() => openModal(<ChapterModal />)}><Icon name="plus" /> Add chapters</button>} />
       {list.length ? (
         <div className="card">
           {list.map((c, i) => (
@@ -42,7 +42,7 @@ function ChapterList() {
           ))}
         </div>
       ) : (
-        <div className="card"><Empty icon="folder" title={`No chapters for ${S.exam}`} text="Add your first chapter, such as “Arithmetic”." action={<button className="btn primary" onClick={() => openModal(<ChapterModal />)}><Icon name="plus" /> Add chapter</button>} /></div>
+        <div className="card"><Empty icon="folder" title={`No chapters for ${S.exam}`} text="Add your first chapter, such as “Arithmetic”." action={<button className="btn primary" onClick={() => openModal(<ChapterModal />)}><Icon name="plus" /> Add chapters</button>} /></div>
       )}
     </>
   );
@@ -54,7 +54,7 @@ function ChapterView({ chapter: ch }) {
   return (
     <>
       <div className="lpath"><a onClick={() => A.nav('learning')}>{S.exam} · Chapters</a><Icon name="chevR" /><span className="cur">{ch.name}</span></div>
-      <PageHead eyebrow="Chapter" title={ch.name} desc="Each subtopic has its learning content (concept, video, quiz) and its own Practice questions. In the student practice section, questions mix across subtopics — each subtopic ramps easy→hard on its own as the student gets it right." actions={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopic</button>} />
+      <PageHead eyebrow="Chapter" title={ch.name} desc="Each subtopic has its learning content (concept, video, quiz) and its own Practice questions. In the student practice section, questions mix across subtopics — each subtopic ramps easy→hard on its own as the student gets it right." actions={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopics</button>} />
       {realSubs.length ? (
         <div className="card">
           {realSubs.map((s, i) => (
@@ -73,7 +73,7 @@ function ChapterView({ chapter: ch }) {
           ))}
         </div>
       ) : (
-        <div className="card"><Empty icon="book" title="No subtopics yet" text="Add a subtopic such as “Averages” to start building its learning content." action={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopic</button>} /></div>
+        <div className="card"><Empty icon="book" title="No subtopics yet" text="Add a subtopic such as “Averages” to start building its learning content." action={<button className="btn primary" onClick={() => openModal(<SubtopicModal chapterName={ch.name} />)}><Icon name="plus" /> Add subtopics</button>} /></div>
       )}
     </>
   );

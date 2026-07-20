@@ -114,13 +114,24 @@ export function ChapterModal({ chapter }) {
   const sections = (S.lmsSections && S.lmsSections[S.exam]) || [];
   const [sectionKey, setSectionKey] = useState(chapter?.section || sections[0]?.key || '');
   const save = () => {
-    if (!name) return;
-    chapter ? A.renameChapter(chapter, name) : A.addChapter(name, sectionKey);
+    if (!name.trim()) return;
+    chapter ? A.renameChapter(chapter, name.trim()) : A.addChaptersBulk(name, sectionKey);
     closeModal();
   };
   return (
-    <Modal title={chapter ? 'Rename chapter' : 'Add chapter'} sub={S.exam} saveLabel={chapter ? 'Save' : 'Add chapter'} onSave={save}>
-      <Field label="Chapter name" value={name} onChange={setName} placeholder="e.g. Arithmetic" />
+    <Modal title={chapter ? 'Rename chapter' : 'Add chapters'} sub={S.exam} saveLabel={chapter ? 'Save' : 'Add chapters'} onSave={save}>
+      {chapter ? (
+        <Field label="Chapter name" value={name} onChange={setName} placeholder="e.g. Arithmetic" />
+      ) : (
+        <Field
+          label="Chapter names"
+          as="textarea"
+          value={name}
+          onChange={setName}
+          placeholder={'One per line, e.g.\nArithmetic\nAlgebra\nGeometry'}
+          hint="Add several at once — one chapter per line."
+        />
+      )}
       {!chapter && sections.length > 0 ? (
         <Field
           label="Section"
@@ -134,10 +145,25 @@ export function ChapterModal({ chapter }) {
 }
 export function SubtopicModal({ subtopic, chapterName }) {
   const [name, setName] = useState(subtopic?.name || '');
-  const save = () => { if (!name) return; subtopic ? A.renameSubtopic(subtopic, name) : A.addSubtopic(name); closeModal(); };
+  const save = () => {
+    if (!name.trim()) return;
+    subtopic ? A.renameSubtopic(subtopic, name.trim()) : A.addSubtopicsBulk(name);
+    closeModal();
+  };
   return (
-    <Modal title={subtopic ? 'Rename subtopic' : 'Add subtopic'} sub={chapterName} saveLabel={subtopic ? 'Save' : 'Add subtopic'} onSave={save}>
-      <Field label="Subtopic name" value={name} onChange={setName} placeholder="e.g. Averages" />
+    <Modal title={subtopic ? 'Rename subtopic' : 'Add subtopics'} sub={chapterName} saveLabel={subtopic ? 'Save' : 'Add subtopics'} onSave={save}>
+      {subtopic ? (
+        <Field label="Subtopic name" value={name} onChange={setName} placeholder="e.g. Averages" />
+      ) : (
+        <Field
+          label="Subtopic names"
+          as="textarea"
+          value={name}
+          onChange={setName}
+          placeholder={'One per line, e.g.\nAverages\nRatios\nPercentages'}
+          hint="Add several at once — one subtopic per line."
+        />
+      )}
     </Modal>
   );
 }

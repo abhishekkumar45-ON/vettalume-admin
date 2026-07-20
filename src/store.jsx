@@ -388,6 +388,21 @@ export const A = {
     try { await api.addTopic(state.exam, key, id, name); state.lms[state.exam].push({ id, name, section: key, subs: [] }); emit(); toast('Chapter added'); }
     catch (e) { toast(e.message || 'Could not add chapter', 'del'); }
   },
+  // Bulk add: one chapter name per line, all into the chosen section.
+  async addChaptersBulk(text, sectionKey) {
+    const key = sectionKey || firstSectionKey();
+    if (!key) { toast('Chapters are still loading — try again in a moment', 'del'); return; }
+    const names = String(text || '').split('\n').map((s) => s.trim()).filter(Boolean);
+    if (!names.length) { toast('Enter at least one chapter name', 'del'); return; }
+    let ok = 0, fail = 0;
+    for (const name of names) {
+      const id = uid();
+      try { await api.addTopic(state.exam, key, id, name); state.lms[state.exam].push({ id, name, section: key, subs: [] }); ok++; }
+      catch (e) { fail++; }
+    }
+    emit();
+    toast(fail ? `Added ${ok}, ${fail} failed` : `Added ${ok} chapter${ok === 1 ? '' : 's'}`, fail ? 'del' : undefined);
+  },
   async renameChapter(ch, name) {
     try { await api.renameNode(ch.id, name); ch.name = name; emit(); toast('Chapter renamed'); }
     catch (e) { toast(e.message || 'Could not rename chapter', 'del'); }
@@ -413,6 +428,21 @@ export const A = {
     const id = uid();
     try { await api.addConcept(state.exam, key, id, name, ch.id); ch.subs.push({ id, name, concept: '', videos: [], pdfs: [], quiz: [], _loaded: true, _section: key }); emit(); toast('Subtopic added'); }
     catch (e) { toast(e.message || 'Could not add subtopic', 'del'); }
+  },
+  // Bulk add: one subtopic name per line, all into the open chapter.
+  async addSubtopicsBulk(text) {
+    const ch = chapterById(state.cid); const key = (ch && ch.section) || firstSectionKey();
+    if (!ch || !key) { toast('Still loading — try again in a moment', 'del'); return; }
+    const names = String(text || '').split('\n').map((s) => s.trim()).filter(Boolean);
+    if (!names.length) { toast('Enter at least one subtopic name', 'del'); return; }
+    let ok = 0, fail = 0;
+    for (const name of names) {
+      const id = uid();
+      try { await api.addConcept(state.exam, key, id, name, ch.id); ch.subs.push({ id, name, concept: '', videos: [], pdfs: [], quiz: [], _loaded: true, _section: key }); ok++; }
+      catch (e) { fail++; }
+    }
+    emit();
+    toast(fail ? `Added ${ok}, ${fail} failed` : `Added ${ok} subtopic${ok === 1 ? '' : 's'}`, fail ? 'del' : undefined);
   },
   async renameSubtopic(s, name) {
     try { await api.renameNode(s.id, name); s.name = name; emit(); toast('Subtopic renamed'); }
