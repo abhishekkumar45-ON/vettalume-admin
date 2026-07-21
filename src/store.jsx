@@ -593,6 +593,16 @@ export const A = {
       const s = curSub();
       try {
         const rep = await api.ingestItems(questions.map((q) => quizToItem(s, q)));
+        // The backend validates the whole batch and rejects ALL rows if any one fails
+        // (correct answer not among the options, fewer than 2 options, unknown section/concept…).
+        // Surface the real reason instead of silently reporting "Imported 0".
+        if (rep && rep.status === 'rejected') {
+          const errs = rep.errors || [];
+          const first = errs[0];
+          const detail = first ? `question ${first.index + 1} — ${first.error}` : 'validation failed';
+          toast(`Import rejected: ${detail}${errs.length > 1 ? ` (and ${errs.length - 1} more)` : ''}`, 'del');
+          return;
+        }
         const r = await api.getItems(state.exam, s.id);   // reload to get canonical ids/state
         s.quiz = (r.items || []).map(itemToQuiz);
         emit();
