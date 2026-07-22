@@ -5,6 +5,7 @@ import { useStore, A, getState, openModal, closeModal, registerImport, toast } f
 import { Toasts } from './ui.jsx';
 import { EXC } from './helpers.js';
 import { parseFile } from './excel.js';
+import { warmup } from './api.js';
 import { ImportPreview } from './modals.jsx';
 
 import { Dashboard, Courses, Reports, Settings } from './pages/Misc.jsx';
@@ -29,6 +30,8 @@ const PAGES = {
 
 export default function App() {
   const S = useStore();
+  // Wake a possibly-cold backend as soon as the console loads (before/while signing in).
+  useEffect(() => { warmup(); }, []);
   return (
     <>
       {S.authed ? <Shell /> : <Auth />}

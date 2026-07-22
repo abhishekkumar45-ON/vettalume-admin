@@ -69,8 +69,16 @@ export async function login(email, password) {
     throw e;
   }
 }
-export function logout() { clearToken(); }
-export const me = () => get('/admin/me');
+// /admin/me is the same for the whole session; memoize it so the Sidebar and Dashboard (which both
+// mount and ask "who am I?") share ONE request instead of two. Reset on logout.
+let _mePromise = null;
+export const me = () => { if (!_mePromise) _mePromise = get('/admin/me'); return _mePromise; };
+export function logout() { clearToken(); _mePromise = null; }
+
+// Fire-and-forget wake-up so the (possibly spun-down) backend is warming while the admin signs in.
+export const warmup = () => {
+  try { fetch(`${BASE}/health`, { cache: 'no-store' }).catch(() => {}); } catch { /* ignore */ }
+};
 
 /* ----------------------------------------------------------- admin: syllabus
    Returns the backend's view: { sections:[{key,name}], nodes:[{id,kind,name,section,parent_id,item_count}] }.

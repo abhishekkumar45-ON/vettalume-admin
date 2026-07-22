@@ -113,6 +113,10 @@ function initialState() {
 /* ============================ external store ============================ */
 let state = initialState();
 let version = 0;
+// Which exams' syllabus / mocks have already been fetched this session — so re-selecting an exam
+// (or bouncing between the Learning and Mocks pages) doesn't refetch data we already hold. Every
+// mutation updates the in-memory copy too, so the cache stays consistent without a server round-trip.
+const _loadedExams = { learning: new Set(), mocks: new Set() };
 const listeners = new Set();
 function emit() { version += 1; listeners.forEach((l) => l()); }
 function subscribe(cb) { listeners.add(cb); return () => listeners.delete(cb); }
@@ -363,8 +367,9 @@ export const A = {
 
   /* chapters / subtopics */
   /* learning — backed by the API */
-  async loadLearning() {
+  async loadLearning(force = false) {
     const exam = state.exam;
+    if (!force && _loadedExams.learning.has(exam)) return;   // already have this exam's syllabus
     try {
       const s = await api.getSyllabus(exam);
       state.lmsSections[exam] = s.sections || [];
@@ -379,6 +384,7 @@ export const A = {
         })),
       }));
       emit();
+      _loadedExams.learning.add(exam);
     } catch (e) { toast(e.message || 'Could not load chapters', 'del'); }
   },
   async addChapter(name, sectionKey) {
@@ -617,14 +623,16 @@ export const A = {
   },
 
   /* mocks — backed by the API */
-  async loadMocks() {
+  async loadMocks(force = false) {
     const exam = state.exam;
+    if (!force && _loadedExams.mocks.has(exam)) return;   // already have this exam's mocks
     try {
       const [sec, full, diag] = await Promise.all([api.getMocks(exam, 'sectional'), api.getMocks(exam, 'full'), api.getMocks(exam, 'diagnostic')]);
       state.sectional[exam] = sec.mocks || [];
       state.full[exam] = full.mocks || [];
       state.diagnostic[exam] = diag.mocks || [];
       emit();
+      _loadedExams.mocks.add(exam);
     } catch (e) { toast(e.message || 'Could not load mocks', 'del'); }
   },
 
